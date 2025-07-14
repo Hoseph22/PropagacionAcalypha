@@ -1,36 +1,36 @@
 # PropagacionAcalypha
 
-#ANALISIS UNIVARIADO 
-# 1) LIBRERÍAS
-# Instala si no las tienes
-# install.packages("googlesheets4")
-# install.packages("agricolae")
-# install.packages("ggplot2")
-# install.packages("dplyr")
+# ANALISIS UNIVARIADO
+#1) LIBRERÍAS
+#Instala si no las tienes
+#install.packages("googlesheets4")
+#install.packages("agricolae")
+#install.packages("ggplot2")
+#install.packages("dplyr")
 
 library(googlesheets4)
 library(agricolae)
 library(ggplot2)
 library(dplyr)
 
-# 2) AUTENTICACIÓN Y DATOS 
-# Autenticación a tu cuenta Google
+#2) AUTENTICACIÓN Y DATOS 
+#Autenticación a tu cuenta Google
 gs4_auth()
 
-# URL de tu Google Sheets
+#URL de tu Google Sheets
 url <-"https://docs.google.com/spreadsheets/d/1PSIhPrPvb76q80dG1OWw04p0YnlM7r9SDAhVRDLs4nA/edit?usp=drive_link"
 
-# Leer hoja específica (ajusta nombre y filas a saltar)
+#Leer hoja específica (ajusta nombre y filas a saltar)
 datos <- read_sheet(url, sheet = "Hoja1", skip = 1)
 
-# Revisar
+#Revisar
 head(datos)
 
-# Factores
+#Factores
 datos$Tratamiento <- as.factor(datos$Tratamiento)
 datos$Fecha <- as.factor(datos$Fecha)
 
-# 3) VARIABLES 
+#3) VARIABLES 
 variables_df1 <- c("NH", "DB", "PHB","PSB", "LB")
 variables_df2 <- c("NN", "LR", "PHR","PSR", "DR")
 variables_todas <- c(variables_df1, variables_df2)
@@ -48,7 +48,7 @@ nombres_facet <- c(
   "DR" = "Diámetro de raíz (cm)"
 )
 
-# 4) ANOVA + LSD 
+#4) ANOVA + LSD 
 letras_LSD <- data.frame()
 
 for (var in variables_todas) {
@@ -71,7 +71,7 @@ for (var in variables_todas) {
   }
 }
 
-# 5) RESUMEN + UNIR LETRAS 
+#5) RESUMEN + UNIR LETRAS 
 resumen <- data.frame()
 
 for (var in variables_todas) {
@@ -113,7 +113,7 @@ plot_data$AjusteLetras <- ajuste_letras[plot_data$Variable]
 df1 <- plot_data %>% filter(Variable %in% variables_df1)
 df2 <- plot_data %>% filter(Variable %in% variables_df2)
 
-# 6) LETRAS POR SUBGRÁFICO 
+#6) LETRAS POR SUBGRÁFICO 
 letras_facets_df1 <- data.frame(
   Variable = variables_df1,
   FacetLabel = nombres_facet[variables_df1],
@@ -142,7 +142,7 @@ coordenadas_letras_df2 <- df2 %>%
   ) %>%
   left_join(letras_facets_df2, by = "FacetLabel")
 
-# 7) THEME PERSONALIZADO 
+#7) THEME PERSONALIZADO 
 windowsFonts(`Times New Roman` = windowsFont("Times New Roman"))
 
 theme_bordes <- theme_minimal(base_family = "Times New Roman") +
@@ -168,11 +168,11 @@ theme_bordes <- theme_minimal(base_family = "Times New Roman") +
     plot.margin = margin(5, 5, 5, 5)
   )
 
-# 8) ORDENAR TRATAMIENTOS 
+#8) ORDENAR TRATAMIENTOS 
 datos$Tratamiento <- factor(datos$Tratamiento,
                             levels = c("T1", "T2", "T3", "T4")) 
 
-# 9) GRAFICO GRUPO 1 
+#9) GRAFICO GRUPO 1 
 gg1 <- ggplot(df1, aes(
   x = Tratamiento, y = media,
   group = Fecha,
@@ -228,7 +228,7 @@ gg1 <- ggplot(df1, aes(
     size = 5, family = "Times New Roman", fontface = "bold"
   )
 
-# 10) GRAFICO GRUPO 2 
+#10) GRAFICO GRUPO 2 
 gg2 <- ggplot(df2, aes(
   x = Tratamiento, y = media,
   group = Fecha,
@@ -284,19 +284,19 @@ gg2 <- ggplot(df2, aes(
     size = 5, family = "Times New Roman", fontface = "bold"
   )
 
-# 11) MOSTRAR 
+#11) MOSTRAR 
 print(gg1)
 print(gg2)
 
 
-#ANALISIS DE COMPONENTES PRINCIPALES
-# 1) LIBRERÍAS 
-# Instala si no las tienes
-# install.packages("googlesheets4")
-# install.packages("FactoMineR")
-# install.packages("factoextra")
-# install.packages("showtext")
-# install.packages("dplyr")
+# ANALISIS DE COMPONENTES PRINCIPALES
+#1) LIBRERÍAS 
+#Instala si no las tienes
+#install.packages("googlesheets4")
+#install.packages("FactoMineR")
+#install.packages("factoextra")
+#install.packages("showtext")
+#install.packages("dplyr")
 
 library(googlesheets4)
 library(FactoMineR)
@@ -304,40 +304,39 @@ library(factoextra)
 library(dplyr)
 library(showtext)
 
-# 2) AUTENTICACIÓN Y DATOS 
+#2) AUTENTICACIÓN Y DATOS 
 gs4_auth()
 
-# URL de tu Google Sheet
+#URL de tu Google Sheet
 url <- "https://docs.google.com/spreadsheets/d/1PSIhPrPvb76q80dG1OWw04p0YnlM7r9SDAhVRDLs4nA/edit?usp=sharing"
 
-# Leer hoja (ajusta skip si tienes encabezado especial)
+#Leer hoja (ajusta skip si tienes encabezado especial)
 datos <- read_sheet(url, sheet = "Hoja1", skip = 1)
 
-# ===============================================================
-# 3) VARIABLES Y NIVELES -----------------------------------------
-# ===============================================================
+
+#3) VARIABLES Y NIVELES 
 variables_df1 <- c("NH", "DB", "PHB", "PSB", "LB")
 variables_df2 <- c("NN", "LR", "PHR", "PSR", "DR")
 niveles_tratamiento <- c("T0", "T1", "T2", "T3")
 
-# Forzar factor y limpiar espacios
+#Forzar factor y limpiar espacios
 datos$Tratamiento <- factor(trimws(datos$Tratamiento), levels = niveles_tratamiento)
 
-# Verifica
+#Verifica
 print(table(datos$Tratamiento))
 
-# 4) PREPARAR DATOS PCA 
+#4) PREPARAR DATOS PCA 
 
-# ⚡ Función robusta para asegurar T0
+#⚡ Función robusta para asegurar T0
 preparar_pca <- function(data, variables, niveles) {
   df <- data %>%
     filter(Tratamiento %in% niveles) %>%
     select(Tratamiento, all_of(variables))
   
-  # Reemplaza NA con medias por columna
+  #Reemplaza NA con medias por columna
   df[ , variables] <- lapply(df[ , variables], function(x) ifelse(is.na(x), mean(x, na.rm = TRUE), x))
   
-  # Verifica si T0 está
+  #Verifica si T0 está
   if (!"T0" %in% df$Tratamiento) {
     # Agrega fila dummy
     fila_dummy <- df[1, ]
@@ -351,7 +350,7 @@ preparar_pca <- function(data, variables, niveles) {
   return(df)
 }
 
-# ⚡ GRUPO 1 y 2
+#⚡ GRUPO 1 y 2
 df_pca1 <- preparar_pca(datos, variables_df1, niveles_tratamiento)
 df_pca2 <- preparar_pca(datos, variables_df2, niveles_tratamiento)
 # Verifica
@@ -359,12 +358,12 @@ print(table(df_pca1$Tratamiento))
 print(table(df_pca2$Tratamiento))
 
 
-# 5) CONFIGURA FUENTE 
+#5) CONFIGURA FUENTE 
 showtext_auto()
 font_add("Times New Roman", regular = "C:/Windows/Fonts/times.ttf")
 
 
-# 6) PCA GRUPO 1 
+#6) PCA GRUPO 1 
 pca1 <- PCA(df_pca1, quali.sup = 1, graph = FALSE)
 
 pca1_biplot <- fviz_pca_biplot(
@@ -389,7 +388,7 @@ pca1_biplot <- fviz_pca_biplot(
   )
 
 
-# 7) PCA GRUPO 2 
+#7) PCA GRUPO 2 
 pca2 <- PCA(df_pca2, quali.sup = 1, graph = FALSE)
 
 pca2_biplot <- fviz_pca_biplot(
@@ -413,44 +412,44 @@ pca2_biplot <- fviz_pca_biplot(
     strip.text = element_text(family = "Times New Roman")
   )
 
-# 8) MOSTRAR 
+#8) MOSTRAR 
 print(pca1_biplot)
 print(pca2_biplot)
 
 
-#MATRIZ DE CORRELACIÓN PEARSON
-# 1) MATRIZ DE CORRELACIÓN 
+# MATRIZ DE CORRELACIÓN PEARSON
+#1) MATRIZ DE CORRELACIÓN 
 
-# Activa showtext y Times New Roman una sola vez
+#Activa showtext y Times New Roman una sola vez
 library(showtext)
 showtext_auto()
 font_add("Times New Roman", regular = "C:/Windows/Fonts/times.ttf")
 
-# Une todas tus variables
+#Une todas tus variables
 variables_todas <- c(variables_df1, variables_df2)
 
-# Filtra solo esas columnas y elimina filas incompletas
+#Filtra solo esas columnas y elimina filas incompletas
 datos_cor <- datos %>%
   select(all_of(variables_todas)) %>%
   na.omit()
 
-# Matriz de correlación de Pearson
+#Matriz de correlación de Pearson
 cor_matrix <- cor(
   datos_cor,
   use = "pairwise.complete.obs",
   method = "pearson"
 )
 
-# Verifica
+#Verifica
 print(round(cor_matrix, 2))
 
-# 2) GRAFICAR CON CORRPLOT 
+#2) GRAFICAR CON CORRPLOT 
 
-# Si no lo tienes:
-# install.packages("corrplot")
+#Si no lo tienes:
+#install.packages("corrplot")
 library(corrplot)
 
-# Correlograma estilo imagen — con todo en Times New Roman
+#Correlograma estilo imagen — con todo en Times New Roman
 corrplot(
   cor_matrix,
   method = "circle",                 # círculos
